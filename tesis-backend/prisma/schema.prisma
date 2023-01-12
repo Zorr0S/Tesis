@@ -1,0 +1,368 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Roles {
+  ADMIN
+  PROFESOR
+  USER
+  INVITADO
+}
+
+enum Sexo {
+  HOMBRE
+  MUJER
+}
+
+model Tipo_Usuario {
+  id     Int    @id @default(autoincrement())
+  nombre String
+}
+
+model Idiomas {
+  ID           Int          @id @default(autoincrement())
+  nombre       String
+  Matereriales Materiales[]
+}
+
+model usuarios {
+  ID                Int           @id @default(autoincrement())
+  Tipo_user         Roles         @default(USER)
+  Nombre            String
+  Apellidos         String
+  Numero_Cuenta     String?
+  Correo            String
+  Contrasena        String
+  Icono             String        @default("https://source.unsplash.com/random")
+  Genero            Sexo
+  FechaDeNacimiento DateTime?
+  Materiales        Materiales[]
+  Seguimiento       Seguimiento[]
+  GrupoCursos       Grupo[]       @relation("RelacionMatriculados")
+  CreadorGuia       Grupo[]       @relation("RelacionCreadorGuia")
+  CursoGuia         CursoGuia[]
+  Plantilla         Plantilla[]
+  Curso             Curso[]
+
+  @@unique([Correo])
+}
+
+// Modelos Relacionados a los materiales
+
+model Tipo_Material {
+  ID            Int          @id @default(autoincrement())
+  Nombre_Tipo   String
+  Terminaciones String?
+  Materiales    Materiales[]
+}
+
+model Etiquetas {
+  ID                      Int          @id @default(autoincrement())
+  Nombre                  String
+  MaterialesPerteneciente Materiales[]
+}
+
+model NivelDeAgregacions {
+  ID          Int          @id @default(autoincrement())
+  Nombre      String
+  Descripcion String       @db.VarChar(500)
+  materiales  Materiales[]
+}
+
+model Materiales {
+  ID            Int     @id @default(autoincrement()) //Identificado
+  Direccion     String
+  Titulo        String
+  MetaDatos     String?
+  LocalPath     String?
+  NombreArchivo String?
+  EsLocal       Boolean @default(false)
+  AuthorID      Int     @default(1)
+
+  TipoMaterialId    Int
+  //Clasificacion
+  //--General
+  Identificador     String  @default(uuid())
+  Catalogo          String?
+  IDIdioma          Int     @default(1)
+  Ambito            String?
+  Estructura        String?
+  IDNivelAgregacion Int     @default(1)
+
+  //--Ciclo devida
+  Version          String?
+  Estado           String?
+  Contribucion     String?
+  TipoContribucion String?
+  Entidad          String?
+
+  //--Uso educativo
+  TipoInteractividad       Int?
+  TipRecurso               Int     @default(1)
+  DensidadSemantica        String?
+  TipoDestinatario         Int?
+  Contexto                 String?
+  RangoDeEdad              String
+  Dificultad               String?
+  TiempoTipicoAprendizadje String?
+  //Campos relacionados a la descripcion
+  DescripcionRecurso       String?
+  ConocimientoPrevio       String?
+  ObjetivosDidacticos      String?
+  TipoConocimiento         Int?
+  IdiomaUtilizado          String?
+  ProcesoCognitivo         String?
+
+  //--Clasificacion
+  Proposito      String?
+  RutaTaxonomica String? @default("Default")
+  Fuente         String?
+  Taxon          String?
+  Entrada        String?
+  Descripcion    String? //Descripcion del recurso
+  PalabrasClave  String?
+
+EsPublica Boolean  @default(true) //Campo para determinar que se subio con exito
+Estatus Boolean @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  Etiquetas                 Etiquetas[]
+  ContenidoBloque           ContenidoBloque[]
+  ContenidoBloquePantilla   ContenidoBloquePlantilla[]
+  ContenidoBloqueCurso      ContenidoBloqueCurso[]
+  Author                    usuarios                   @relation(fields: [AuthorID], references: [ID])
+  TipoMaterial              Tipo_Material              @relation(fields: [TipoMaterialId], references: [ID])
+  IdiomaTabla               Idiomas?                   @relation(fields: [IDIdioma], references: [ID])
+  Agregacion                NivelDeAgregacions         @relation(fields: [IDNivelAgregacion], references: [ID])
+  TipoRecursoEducativoTabla TipoRecursoEducativo       @relation(fields: [TipRecurso], references: [ID])
+  TipoInteractividadTabla   TipoInteractividad?        @relation(fields: [TipoInteractividad], references: [ID])
+  Destinatario              Destinatario?              @relation(fields: [TipoDestinatario], references: [ID])
+  TipoDeConocimiento        TipoConocimiento?          @relation(fields: [TipoConocimiento], references: [ID])
+  Seguimiento               Seguimiento[]
+  //ContenidoCurso            ContenidoCurso?      @relation(fields: [contenidoCursoID], references: [ID])
+  //contenidoCursoID          Int?
+
+  @@fulltext([Titulo])
+  @@fulltext([Descripcion])
+  @@fulltext([PalabrasClave])
+}
+
+/////Tipos relacionados a la clasificacion de recursos
+model TipoRecursoEducativo {
+  ID          Int          @id @default(autoincrement())
+  Nombre      String
+  Descripcion String       @db.VarChar(500)
+  Materiales  Materiales[]
+}
+
+model TipoInteractividad {
+  ID          Int          @id @default(autoincrement())
+  Nombre      String
+  Descripcion String       @db.VarChar(500)
+  Materiales  Materiales[]
+}
+
+model Destinatario {
+  ID          Int          @id @default(autoincrement())
+  Nombre      String
+  Descripcion String
+  Materiales  Materiales[]
+}
+
+model TipoConocimiento {
+  ID          Int          @id @default(autoincrement())
+  Nombre      String
+  Descripcion String
+  Materiales  Materiales[]
+}
+
+///Reopilacion
+model Seguimiento {
+  ID              Int        @id @default(autoincrement())
+  RecursoID       Int
+  UsuarioID       Int
+  PrimerVisto     DateTime   @default(now())
+  UltimaVisto     DateTime   @updatedAt
+  PorcentajeVisto Float      @default(0)
+  TiempoVisto     Int        @default(0)
+  RutaVista       String
+  Usuario         usuarios   @relation(fields: [UsuarioID], references: [ID])
+  Recurso         Materiales @relation(fields: [RecursoID], references: [ID])
+@@unique([RecursoID,UsuarioID])
+  // Materiales  Materiales[]
+
+}
+
+/////////Equema
+
+model Facultad {
+  ID       Int       @id @default(autoincrement())
+  Nombre   String
+  Carreras Carrera[]
+}
+
+model Carrera {
+  ID                    Int           @id @default(autoincrement())
+  Nombre                String
+  FacultadPerteneciente Facultad      @relation(fields: [FacultadID], references: [ID])
+  FacultadID            Int
+  Planes                PlanEstudio[]
+}
+
+model PlanEstudio {
+  ID                   Int        @id @default(autoincrement())
+  Nombre               String
+  CarreraPerteneciente Carrera    @relation(fields: [CarreraID], references: [ID])
+  CarreraID            Int
+  Semestres            Semestre[]
+}
+
+model Semestre {
+  ID                Int         @id @default(autoincrement())
+  Nombre            String
+  PlanPerteneciente PlanEstudio @relation(fields: [PlanID], references: [ID])
+  PlanID            Int
+  Materias          Materia[]
+}
+
+//Modelos relacionados a Materias
+
+model Materia {
+  ID                    Int      @id @default(autoincrement())
+  Nombre                String
+  Descripcion           String?
+  SemestrePerteneciente Semestre @relation(fields: [SemestreID], references: [ID])
+  SemestreID            Int
+  Bloques               Bloque[]
+  Publica               Boolean  @default(false)
+}
+
+model Bloque {
+  ID                   Int               @id @default(autoincrement())
+  //Curso al que pertenece (Solo puede pertenecer a un curso)
+  Nombre               String
+  Descripcion          String?
+  MateriaPerteneciente Materia           @relation(fields: [MateriaID], references: [ID])
+  MateriaID            Int
+  Contenido            ContenidoBloque[]
+}
+
+model ContenidoBloque {
+  ID                  Int          @id @default(autoincrement())
+  Titulo              String
+  Descripcion         String?
+  BloquePerteneciente Bloque       @relation(fields: [BlqueID], references: [ID])
+  BlqueID             Int
+  MaterialAsociado    Materiales[]
+}
+
+model Token {
+  ID    Int    @id @default(autoincrement())
+  Token String
+}
+
+//Cursos
+//Esto sera la plantilla del curso
+model CursoGuia {
+  ID     Int     @id @default(autoincrement())
+  Nombre String?
+
+  Plantilla Curso[]
+  Icono     String   @default("https://source.unsplash.com/random")
+  Grupo     Grupo[]
+  CreadorID Int
+  Creador   usuarios @relation(fields: [CreadorID], references: [ID])
+}
+
+//Grupos de un curso
+model Grupo {
+  ID           Int         @id @default(autoincrement())
+  Nombre       String
+  Descripcion  String?
+  Icono        String      @default("https://source.unsplash.com/random")
+  CreadorID    Int
+  Creador      usuarios    @relation("RelacionCreadorGuia", fields: [CreadorID], references: [ID])
+  Codigo       String      @default(uuid())
+  CursoGuia    CursoGuia[]
+  //@relation(fields: [GuiaID], references: [ID]) 
+  Matriculados usuarios[]  @relation("RelacionMatriculados")
+  @@unique([Codigo])
+
+}
+
+//Plantillas que seran RenderAsociarAMaterialas bases para los cursos
+model Plantilla {
+  ID          Int               @id @default(autoincrement())
+  Nombre      String
+  Descripcion String?
+  Bloques     BloquePlantilla[]
+  Publica     Boolean           @default(false)
+
+  CreadorID Int
+  Creador   usuarios @relation(fields: [CreadorID], references: [ID])
+}
+
+model BloquePlantilla {
+  ID                   Int                        @id @default(autoincrement())
+  //Curso al que pertenece (Solo puede pertenecer a un curso)
+  Nombre               String
+  Descripcion          String?
+  MateriaPerteneciente Plantilla                  @relation(fields: [MateriaID], references: [ID])
+  MateriaID            Int
+  Contenido            ContenidoBloquePlantilla[]
+}
+
+model ContenidoBloquePlantilla {
+  ID                  Int             @id @default(autoincrement())
+  Titulo              String
+  Descripcion         String?
+  BloquePerteneciente BloquePlantilla @relation(fields: [BlqueID], references: [ID])
+  BlqueID             Int
+  MaterialAsociado    Materiales[]
+}
+
+//LOS CURSOS CREADOS A PARTIR DE LAS PLANTILLAS
+model Curso {
+  ID          Int           @id @default(autoincrement())
+  Nombre      String
+  Descripcion String?
+  Bloques     BloqueCurso[]
+  Publica     Boolean       @default(false)
+
+  CreadorID Int
+  Creador   usuarios    @relation(fields: [CreadorID], references: [ID])
+  CursoGuia CursoGuia[]
+}
+
+model BloqueCurso {
+  ID                   Int                    @id @default(autoincrement())
+  //Curso al que pertenece (Solo puede pertenecer a un curso)
+  Nombre               String
+  Descripcion          String?
+  MateriaPerteneciente Curso                  @relation(fields: [MateriaID], references: [ID], onDelete: Cascade)
+  MateriaID            Int
+  Contenido            ContenidoBloqueCurso[]
+}
+
+model ContenidoBloqueCurso {
+  ID                  Int          @id @default(autoincrement())
+  Titulo              String
+  Descripcion         String?
+  BloquePerteneciente BloqueCurso  @relation(fields: [BlqueID], references: [ID], onDelete: Cascade)
+  BlqueID             Int
+  MaterialAsociado    Materiales[]
+}
+
+model Iconos {
+  ID            Int    @id @default(autoincrement())
+  NombreArchivo String
+  RutaArchivo   String
+  LinkDeIcono   String
+}
