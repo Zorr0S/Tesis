@@ -9,9 +9,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@mui/icons-material": "^5.11.0",
+    "@mui/material": "^5.11.4",
+    "@mui/x-data-grid": "^5.17.18",
+    "@reduxjs/toolkit": "^1.9.1",
+    "axios": "^1.2.2",
+    "date-fns": "^2.29.3",
+    "material-ui-confirm": "^3.0.7",
+    "material-ui-popup-state": "^5.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-redux": "^8.0.5"
+    "react-player": "^2.11.0",
+    "react-query": "^3.39.2",
+    "react-redux": "^8.0.5",
+    "react-router-dom": "^6.6.2"
   },
   "devDependencies": {
     "@types/react": "^18.0.26",
