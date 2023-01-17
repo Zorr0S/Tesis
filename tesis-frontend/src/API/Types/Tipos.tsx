@@ -1,4 +1,4 @@
-export interface UserInfo {
+export  interface UserInfo {
   Token: string;
   Refresh: string;
   Nivel: Roles;

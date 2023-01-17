@@ -108,6 +108,63 @@ export async function GetListaMaterialesCurso(req: Request, res: Response) {
     res.status(500).json([{ mensaje: "error al obtner los datos" }]);
   }
 }
+export async function GetListaMaterialesCursoAdmin(req: Request, res: Response) {
+  try {
+    const { MaterialID,VistaUserID } = req.query;
+    const token = req.headers["x-access-token"] as string;
+    //console.log("Token: " + token);
+    let IDUser,UserViewID: number;
+    if(VistaUserID==null){
+      const decodeded: any = jwt.verify(token, ACCESS_TOKEN_SECRET);
+      IDUser = parseInt(decodeded.ID);
+      const CursoLogged = await prisma.materiales.findMany({
+        where: {
+          ContenidoBloqueCurso: {
+            some: {
+              ID: parseInt(MaterialID as string),
+            },
+          },
+        },
+        include: {
+          Seguimiento: {
+            where: {
+              UsuarioID: IDUser,
+            },
+          },
+          TipoMaterial: true,
+        },
+      });
+  
+     return res.json(CursoLogged);
+    }else{ 
+      UserViewID = parseInt(VistaUserID as string);
+      const CursoLogged = await prisma.materiales.findMany({
+        where: {
+          ContenidoBloqueCurso: {
+            some: {
+              ID: parseInt(MaterialID as string),
+            },
+          },
+        },
+        include: {
+          Seguimiento: {
+            where: {
+              UsuarioID: UserViewID,
+            },
+          },
+          TipoMaterial: true,
+        },
+      });
+  
+     return res.json(CursoLogged);
+    }
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json([{ mensaje: "error al obtner los datos" }]);
+  }
+}
+
 
 export async function getMaterialesDisponible(req: Request, res: Response) {
   try {

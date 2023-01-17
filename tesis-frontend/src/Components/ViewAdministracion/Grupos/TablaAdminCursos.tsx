@@ -108,7 +108,7 @@ export default function QuickFilteringGrid({ data }: { data: Grupo[] }) {
   }, [data]);
 
   return (
-    <div style={{ height: 400, width: "100%" }}>
+    <Box sx={{height:400,width:1}}>
       Tus Grupos:
       <DataGrid
         disableColumnFilter
@@ -139,7 +139,7 @@ export default function QuickFilteringGrid({ data }: { data: Grupo[] }) {
       {/* <pre style={{ fontSize: 10 }}>
         {JSON.stringify(selectedRows, null, 4)}
       </pre> */}
-    </div>
+    </Box>
   );
 }
 const columns: GridColDef<Grupo>[] = [

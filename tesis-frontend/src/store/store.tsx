@@ -1,8 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit'
-import counterReducer  from "./counterSlice"
+import UserInfoReducers  from "./counterSlice"
+import counterReducer  from "./currentView"
+
 export const store = configureStore({
   reducer: {
-    Token: counterReducer
+    Token: UserInfoReducers,
+    UserView:counterReducer
+
   },
 })
 

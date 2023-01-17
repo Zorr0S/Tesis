@@ -591,7 +591,7 @@ async function main() {
   //       Nombre: "Práctica profesional",
   //     },
   //   ],
-  // });
+  // }); Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
 }
 main()
   .catch((e) => {

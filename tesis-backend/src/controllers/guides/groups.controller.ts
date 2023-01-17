@@ -44,6 +44,50 @@ export async function GetGroup(req: Request, res: Response) {
   }
 }
 
+export async function GetGroupAdmin(req: Request, res: Response) {
+  try {
+    // const token = req.headers["x-access-token"];
+    const { Codigo } = req.query;
+    //const decodeded: any = jwt.verify(token as string, ACCESS_TOKEN_SECRET);
+    const GruposSuscritos = await prisma.grupo.findFirst({
+      where: { Codigo: Codigo as string },
+      include: {
+        Creador: { select: { Nombre: true, Apellidos: true } },
+        Matriculados: {
+          select: {
+            ID: true,
+            Nombre: true,
+            Apellidos: true,
+            Numero_Cuenta: true,
+            Icono: true,
+          },
+        },
+        CursoGuia: {
+          include: {
+            Plantilla: {
+              include: {
+                Bloques: {
+                  include: {
+                    Contenido: {
+                      include: {
+                        MaterialAsociado: { include: { TipoMaterial: true } },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+   return res.status(200).json(GruposSuscritos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json([{ mensaje: "error al obtner los datos" }]);
+  }
+}
 //Trae todos los grupos en que este matriculado el user
 export async function GetSuscribedGroups(req: Request, res: Response) {
   try {

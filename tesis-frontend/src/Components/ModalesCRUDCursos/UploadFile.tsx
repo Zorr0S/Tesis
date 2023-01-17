@@ -11,8 +11,10 @@ import {
   Divider,
   Autocomplete,
   Button,
+  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
+import { useConfirm } from "material-ui-confirm";
 import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "react-query";
 import { Link } from "react-router-dom";
@@ -30,6 +32,7 @@ import { AddBloque, AddContenido } from "./ModalesCursosCrear";
 
 export function InterfazSubirArchivo({ ContenidoID }: { ContenidoID: number }) {
   let User = useAppSelector((state) => state.Token);
+  const confirm = useConfirm();
 
   //const [value, setValue] = React.useState<Date | null>(null);
 
@@ -261,7 +264,7 @@ export function InterfazSubirArchivo({ ContenidoID }: { ContenidoID: number }) {
       // I will fire first
     },
     onSuccess(data, variables, context) {
-      alert("Se ha subido el recurso exitosamente");
+      confirm({ title: "ARCHIVO SUBIDO"}).then(() => {});
       setStatus(
         <>
           <Stack>
@@ -273,6 +276,17 @@ export function InterfazSubirArchivo({ ContenidoID }: { ContenidoID: number }) {
       // window.location.reload();
     },
   });
+  useEffect(() => {
+    if (AddMateria.isLoading) {
+      setStatus(<CircularProgress color="success" />);
+    } else if (AddMateria.isError) {
+      setStatus(<Chip label="Fallo en subir recurso" color="error" />);
+    } else if(AddMateria.status=="success"){
+      setStatus(<Chip label="Se Subio con exito" color="success" />);
+
+    }
+  }, [AddMateria]);
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     try {
       event.preventDefault();
@@ -298,40 +312,40 @@ export function InterfazSubirArchivo({ ContenidoID }: { ContenidoID: number }) {
   //   FetchDestinatario == undefined ||
   //   FetchTipoConocimiento  == undefined
   // )return cargando;
-    //******************************************************************************************* */
+  //******************************************************************************************* */
 
-    //Use effect para obtener los datos de la API
-    useEffect(() => {
-      SetCatalogo(Default);
-      //Idioma
-      // SetSelectIdioma(FetchIdioma[0]);
-      SetAmbito(Default);
+  //Use effect para obtener los datos de la API
+  useEffect(() => {
+    SetCatalogo(Default);
+    //Idioma
+    // SetSelectIdioma(FetchIdioma[0]);
+    SetAmbito(Default);
 
-      SetEstructura(Default);
-      // SetSelectNivelAgregacion(FetchNivelAgregacion[0]);
-      SetVersion(Default);
-      SetEstado(Default);
-      SetContribucion(Default);
-      SetTipoContribucion(Default);
-      SetEntidad(Default);
-      // SetSelectNivelInteractividad(FetchNivelInteractividad[0]);
-      // SetSelectTipoRecursoEducativo(FetchTipoRecursoEducativo[0]);
-      // SetSelectDestinatario(FetchDestinatario[0]);
-      SetContexto(Default);
-      SetEdad(Default);
-      SeDificultad(Default);
-      SeTiempoTipico(Default);
-      SetDescripcion(Default);
-      SetConocimientoPrevio(Default);
-      SetObjetivosDidacticos(Default);
-      // SetSelectTipoConocimiento(FetchTipoConocimiento[0]);
-      SetIdiomaUsado(Default);
-      SetProcesoCognitivo(Default);
-      SetProposito(Default);
-      SetFuente(Default);
-      SetEntrada(Default);
-      SetTaxon(Default);
-    }, []);
+    SetEstructura(Default);
+    // SetSelectNivelAgregacion(FetchNivelAgregacion[0]);
+    SetVersion(Default);
+    SetEstado(Default);
+    SetContribucion(Default);
+    SetTipoContribucion(Default);
+    SetEntidad(Default);
+    // SetSelectNivelInteractividad(FetchNivelInteractividad[0]);
+    // SetSelectTipoRecursoEducativo(FetchTipoRecursoEducativo[0]);
+    // SetSelectDestinatario(FetchDestinatario[0]);
+    SetContexto(Default);
+    SetEdad(Default);
+    SeDificultad(Default);
+    SeTiempoTipico(Default);
+    SetDescripcion(Default);
+    SetConocimientoPrevio(Default);
+    SetObjetivosDidacticos(Default);
+    // SetSelectTipoConocimiento(FetchTipoConocimiento[0]);
+    SetIdiomaUsado(Default);
+    SetProcesoCognitivo(Default);
+    SetProposito(Default);
+    SetFuente(Default);
+    SetEntrada(Default);
+    SetTaxon(Default);
+  }, []);
   return (
     <Container component={"main"} maxWidth="md">
       <CssBaseline />
@@ -431,7 +445,7 @@ export function InterfazSubirArchivo({ ContenidoID }: { ContenidoID: number }) {
           disablePortal
           id="CB-Idioma"
           options={FetchIdioma || []}
-        //  defaultValue={FetchIdioma[0]}
+          //  defaultValue={FetchIdioma[0]}
           getOptionLabel={(option: any) => option.nombre.toString()}
           isOptionEqualToValue={(option, value) => option.ID === value.ID}
           sx={{ width: "10rem", paddingInline: "0.5rem" }}
@@ -467,7 +481,7 @@ export function InterfazSubirArchivo({ ContenidoID }: { ContenidoID: number }) {
           disablePortal
           id="CB-NivelDeAgregacion"
           options={FetchNivelAgregacion || []}
-     //     defaultValue={FetchNivelAgregacion[0] as any}
+          //     defaultValue={FetchNivelAgregacion[0] as any}
           getOptionLabel={(option: any) => option.Nombre.toString()}
           isOptionEqualToValue={(option, value) => option.ID === value.ID}
           sx={{ width: "15rem", paddingInline: "0.5rem" }}
@@ -536,7 +550,7 @@ export function InterfazSubirArchivo({ ContenidoID }: { ContenidoID: number }) {
           disablePortal
           id="CB-NivelDeInteractividad"
           options={FetchNivelInteractividad || []}
-       //   defaultValue={FetchNivelInteractividad[0]}
+          //   defaultValue={FetchNivelInteractividad[0]}
           getOptionLabel={(option: any) => option.Nombre.toString()}
           isOptionEqualToValue={(option, value) => option.ID === value.ID}
           sx={{ width: "15rem", paddingInline: "0.5rem" }}
@@ -551,7 +565,7 @@ export function InterfazSubirArchivo({ ContenidoID }: { ContenidoID: number }) {
           disablePortal
           id="CB-TipoRecursoEducativo"
           options={FetchTipoRecursoEducativo || []}
-         // defaultValue={FetchTipoRecursoEducativo[0]}
+          // defaultValue={FetchTipoRecursoEducativo[0]}
           getOptionLabel={(option: any) => option.Nombre.toString()}
           isOptionEqualToValue={(option, value) => option.ID === value.ID}
           sx={{ width: "15rem", paddingInline: "0.5rem" }}
@@ -566,7 +580,7 @@ export function InterfazSubirArchivo({ ContenidoID }: { ContenidoID: number }) {
           disablePortal
           id="CB-Destinatario"
           options={FetchDestinatario || []}
-         // defaultValue={FetchDestinatario[0]}
+          // defaultValue={FetchDestinatario[0]}
           getOptionLabel={(option: any) => option.Nombre.toString()}
           isOptionEqualToValue={(option, value) => option.ID === value.ID}
           sx={{ width: "15rem", paddingInline: "0.5rem" }}

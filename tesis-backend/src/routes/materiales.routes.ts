@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { GetListaMaterialesCurso, GetListaMaterialesMateria, getMaterialesDisponible, getMaterialesCurso, getMaterialesMateria, LinkMateriralToCurso, LinkMateriralToMateria, getMateriales, GetPersonalRecurso } from "../controllers/materiales.controller";
+import { GetListaMaterialesCurso, GetListaMaterialesMateria, getMaterialesDisponible, getMaterialesCurso, getMaterialesMateria, LinkMateriralToCurso, LinkMateriralToMateria, getMateriales, GetPersonalRecurso, GetListaMaterialesCursoAdmin } from "../controllers/materiales.controller";
 import { EsProfesor } from "../middlewares/BasicAuth";
 const router = Router();
 
@@ -13,6 +13,8 @@ router.get("/Material",getMaterialesDisponible)
 
 router.get("/MaterialesLista",GetListaMaterialesMateria)
 router.get("/MaterialesListaGrupo",GetListaMaterialesCurso)
+router.get("/MaterialesListaGrupoAdmin",GetListaMaterialesCursoAdmin)
+
 
 
 router.get("/MaterialesContenido",getMaterialesMateria)

@@ -2,7 +2,9 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Autocomplete,
   Avatar,
+  Paper,
   Box,
   Button,
   Container,
@@ -14,13 +16,14 @@ import {
   ListItemAvatar,
   ListItemText,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
-import NoteAddIcon from '@mui/icons-material/NoteAdd';
+import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { useParams } from "react-router-dom";
 import { Dominio } from "../../../API/API";
@@ -36,7 +39,7 @@ import {
   Recurso,
   Seguimiento,
 } from "../../../API/Types/Tipos";
-import { useAppSelector } from "../../../store/hooks";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { MaterialElemento } from "../../IconoVariable/IconoVariable";
 import MediaViewer from "../../MediaViewer/MediaViewer";
 import { MaterialEstatus } from "../../REA/MaterialEstatus";
@@ -63,6 +66,8 @@ import {
   DeleteCurso,
   DeleteGuia,
 } from "../../ModalesCRUDCursos/ModalesCursosDelete";
+import { SeguimientoButton } from "../../REA/GroupComponents/SeguimientoButton";
+import { setUserIDState } from "../../../store/currentView";
 // import { Dominio } from "../../API/API";
 // import { Grupo, Guia } from "../../API/Types/Tipos";
 // import { CursoPlantillaRender } from "../../Components/REA/GroupComponents/GroupRender";
@@ -71,25 +76,26 @@ import {
 export function AdminGrupos() {
   let { ID } = useParams();
   const [GrupoRender, setGrupoRender] = useState<JSX.Element>(<></>);
-  const { data, isError, isFetching, refetch } = useQuery(
+  const { data, isError, isFetching, refetch,isFetched } = useQuery(
     "Seguimiento-General",
     async () => {
       const { data } = await axios({
         baseURL: Dominio,
         method: "get",
-        url: "/grupo/",
+        url: "/grupo/admin",
         params: {
           Codigo: ID as string,
         },
       });
       return data as Grupo;
     },
-    { refetchInterval: 3000 }
+  //  { refetchInterval: 3000 }
   );
-  if (data == undefined) {
-    return <></>;
-  }
+  let UserID = useAppSelector((state) => state.UserView);
+  const dispatch = useAppDispatch();
 
+if(isFetched){
+  if(data==undefined) return <>Cargando..</>
   return (
     <>
       <Container
@@ -103,13 +109,14 @@ export function AdminGrupos() {
           }
         }
       >
-        <Box
+        <Paper
+          elevation={16}
           sx={{
+            padding:"1rem",
             marginTop: 8,
             display: "flex",
             flexDirection: "row",
             //    alignItems: "center",
-            bgcolor: "lightgray",
           }}
         >
           <Stack>
@@ -117,7 +124,7 @@ export function AdminGrupos() {
               sx={{ width: "15rem", height: "15rem", alignItems: "left" }}
               variant="rounded"
               alt="Icono"
-              src={data.Icono || "https://source.unsplash.com/random"}
+              src={data?.Icono || "https://source.unsplash.com/random"}
             />
             <Container>
               {" "}
@@ -131,7 +138,10 @@ export function AdminGrupos() {
               //bgcolor: "lightpink",
             }}
           >
-            <Stack>
+            <Stack sx={{
+            padding:"0.5rem",
+
+            }}>
               <EditGrupo IDGrupo={data.ID} Refresh={refetch}>
                 <Typography variant="h1" component="div" gutterBottom>
                   {data?.Nombre}
@@ -145,7 +155,7 @@ export function AdminGrupos() {
                 Autor: {data?.Creador.Apellidos} {data?.Creador.Nombre}
               </Typography>
 
-              {/* <Box
+              <Box
                 sx={{
                   marginTop: 8,
                   display: "flex",
@@ -153,11 +163,30 @@ export function AdminGrupos() {
                   alignItems: "flex-end",
                 }}
               >
-                <SeguimientoButton CodigoGrupo={ID as string} />
-              </Box> */}
+                <Stack>
+                  <Autocomplete
+                    disablePortal
+                    options={data.Matriculados || []}
+                    //  defaultValue={FetchIdioma[0]}
+                    getOptionLabel={(option) =>
+                      `${option.Nombre} ${option.Apellidos}`
+                    }
+                    isOptionEqualToValue={(option, value) =>
+                      option.ID === value.ID
+                    }
+                    sx={{ width: "16rem", paddingInline: "0.5rem" }}
+                    onChange={(event, value) => {
+                      dispatch(setUserIDState({ IDUser: value?.ID || null }));
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Vista de...." />
+                    )}
+                  />
+                </Stack>
+              </Box>
             </Stack>
           </Box>
-        </Box>
+        </Paper>
         <Divider />
         <Box sx={{ width: "100%", height: "30rem" }}>
           <AddGuia GrupoID={data.ID}>
@@ -175,6 +204,11 @@ export function AdminGrupos() {
       </Container>
     </>
   );
+}else{
+  return(<>..Cargando</>)
+}
+
+  
 }
 
 function AdminCursoPlantillaRender({
@@ -187,8 +221,8 @@ function AdminCursoPlantillaRender({
   return (
     <>
       {Data.map((data, index) => (
-        <Container>
-          <Typography variant="h3" component="div" gutterBottom>
+        <Container key={`AdminCursoPlantillaRender-Contenedor${data.ID}`}>
+          <Typography variant="h3" component="div" gutterBottom key={`AdminCursoPlantillaRender-Texto${data.ID}`}>
             <EditGuia IDGuia={data.ID}>
               {" "}
               {data.Nombre}
@@ -355,15 +389,18 @@ function AdminCursoContenidoRender({ Data }: { Data: ContenidoBloque[] }) {
 
 function Cortador({ MaterialID }: { MaterialID: number }) {
   let User = useAppSelector((state) => state.Token);
-  const { data, isError, isFetching } = useQuery(
+  let UserID = useAppSelector((state) => state.UserView);
+
+  const { data, isError, isFetching, refetch } = useQuery(
     `Contenido-Curso-${MaterialID}`,
     async () => {
       const { data } = await axios({
         baseURL: Dominio,
         method: "get",
-        url: "/recursos/MaterialesListaGrupo",
+        url: "/recursos/MaterialesListaGrupoAdmin",
         params: {
           MaterialID: MaterialID,
+          VistaUserID: UserID.IDUser,
         },
         headers: {
           "x-access-token": UndefinedTokenToEmptyString(User.Token),
@@ -372,6 +409,11 @@ function Cortador({ MaterialID }: { MaterialID: number }) {
       return data as Recurso[];
     }
   );
+
+  useEffect(() => {
+    refetch();
+  }, [UserID.IDUser]);
+
   if (data == undefined) return <></>;
   // const [DataParte1, setDataParte1] = useState<Recurso[]>([]);
   // //const [Segunda, setSegunda] = useState<Recurso[]>([]);
@@ -449,7 +491,7 @@ function AdminCursoMaterialesRender({ Data }: { Data: Recurso[] }) {
               //   </IconButton>
               // }
               >
-                <ListItemAvatar >
+                <ListItemAvatar>
                   <Avatar sizes="2">
                     <MaterialElemento tipo={dato.TipoMaterial.Nombre_Tipo} />
                   </Avatar>
